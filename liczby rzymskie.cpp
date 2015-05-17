@@ -5,7 +5,8 @@ int rzymskieNAarabskie(string roman) //roman to arabic
 {
 	int size=roman.size();
 	int c=0; //which cipher
-	int arabic=0;
+	int arabic=0; //result
+	
 	while(c<size && roman[c]=='M')
 	{
 		arabic+=1000;
@@ -14,156 +15,72 @@ int rzymskieNAarabskie(string roman) //roman to arabic
 	if(c>=size)
 		return arabic;
 		
-	if(c<=size-2 && (roman[c+1]=='M' || roman[c+1]=='D') )
+	for(int nr=100; ; nr/=10) //return always occurs
 	{
-		if(roman[c+1]=='M')
+		char ten,five,one;
+		switch(nr)
 		{
-			arabic+=900;
+			case 100: ten='M'; five='D'; one='C'; break;
+			case 10: ten='C'; five='L'; one='X'; break;
+			case 1: ten='X'; five='V'; one='I'; break;
+		}
+		if(c<=size-2 && (roman[c+1]==ten || roman[c+1]==five) )
+		{
+			if(roman[c+1]==ten)
+				arabic+=nr*9;
+			else
+				arabic+=nr*4;
 			c+=2;
 		}
 		else
 		{
-			arabic+=400;
-			c+=2;
-		}
-	}
-	else
-	{
-		while(c<size && (roman[c]=='C' || roman[c]=='D') )
-		{
-			if(roman[c]=='C')
+			while(c<size && (roman[c]==one || roman[c]==five) )
 			{
-				arabic+=100;
-				c++;
-			}
-			else
-			{
-				arabic+=500;
+				if(roman[c]==one)
+					arabic+=nr;
+				else
+					arabic+=nr*5;
 				c++;
 			}
 		}
+		if(c>=size)
+			return arabic;
 	}
-	if(c>=size)
-		return arabic;
-		
-	if(c<=size-2 && (roman[c+1]=='C' || roman[c+1]=='L') )
-	{
-		if(roman[c+1]=='C')
-		{
-			arabic+=90;
-			c+=2;
-		}
-		else 
-		{
-			arabic+=40;
-			c+=2;
-		}
-	}
-	else
-	{
-		while(c<size && (roman[c]=='X' || roman[c]=='L') )
-		{
-			if(roman[c]=='X')
-			{
-				arabic+=10;
-				c++;
-			}
-			else
-			{
-				arabic+=50;
-				c++;
-			}
-		}
-	}
-	if(c>=size)
-		return arabic;
-
-	if(c<=size-2 && (roman[c+1]=='X' || roman[c+1]=='V') )
-	{
-		if(roman[c+1]=='X')
-		{
-			arabic+=9;
-			c+=2;
-		}
-		else
-		{
-			arabic+=4;
-			c+=2;
-		}
-	}
-	else
-	{
-		while(c<size && (roman[c]=='I' || roman[c]=='V') )
-		{
-			if(roman[c]=='I')
-			{
-				arabic+=1;
-				c++;
-			}
-			else
-			{
-				arabic+=5;
-				c++;
-			}
-		}
-	}
-	return arabic;
 }
 
 string arabskieNArzymskie (int arabic) //arabic to roman
 {
-	string roman="";
+	string roman=""; //result
 	
-	if(arabic>0)
+	for(int i=1; i<=3 && arabic>0; i++, arabic/=10)
 	{
-		switch(arabic%10)
+		char ten,five,one;
+		switch(i)
 		{
-			case 1: roman="I"; break;
-			case 2: roman="II"; break;
-			case 3: roman="III"; break;
-			case 4: roman="IV"; break;
-			case 5: roman="V"; break;
-			case 6: roman="VI"; break;
-			case 7: roman="VII"; break;
-			case 8: roman="VIII"; break;
-			case 9: roman="IX"; break;
+			case 1: ten='X'; five='V'; one='I'; break;
+			case 2: ten='C'; five='L'; one='X'; break;
+			case 3: ten='M'; five='D'; one='C'; break;
 		}
-		arabic/=10;
-	}
-	
-	if(arabic>0)
-	{
-		switch(arabic%10)
+		int cipher=arabic%10;
+		if(cipher<=3)
 		{
-			case 1: roman="X"+roman; break;
-			case 2: roman="XX"+roman; break;
-			case 3: roman="XXX"+roman; break;
-			case 4: roman="XL"+roman; break;
-			case 5: roman="L"+roman; break;
-			case 6: roman="LX"+roman; break;
-			case 7: roman="LXX"+roman; break;
-			case 8: roman="LXXX"+roman; break;
-			case 9: roman="XC"+roman; break;
+			for(int j=0; j<cipher; j++)
+				roman=one+roman;
+			continue;
 		}
-		arabic/=10;
+		if(cipher==9)
+		{
+			roman=ten+roman;
+			roman=one+roman;
+			continue;
+		}
+		for(int j=0; j<cipher-5; j++) //6-8
+			roman=one+roman;
+		roman=five+roman;
+		if(cipher==4)
+			roman=one+roman;
 	}
 	
-	if(arabic>0)
-	{
-		switch(arabic%10)
-		{
-			case 1: roman="C"+roman; break;
-			case 2: roman="CC"+roman; break;
-			case 3: roman="CCC"+roman; break;
-			case 4: roman="CD"+roman; break;
-			case 5: roman="D"+roman; break;
-			case 6: roman="DC"+roman; break;
-			case 7: roman="DCC"+roman; break;
-			case 8: roman="DCCC"+roman; break;
-			case 9: roman="CM"+roman; break;
-  	}
-	  arabic/=10;
-	}
 	for(int i=arabic; i>0; i--)
 		roman="M"+roman;
 	return roman;
@@ -171,5 +88,12 @@ string arabskieNArzymskie (int arabic) //arabic to roman
 
 int main()
 {
+	for(int i=0; i<=1001; i++)
+	{
+		cout<<i<<"\t"<<arabskieNArzymskie(i)<<"\t"<<rzymskieNAarabskie(arabskieNArzymskie(i))<<endl;
+		if(rzymskieNAarabskie(arabskieNArzymskie(i))!=i)
+			break;
+	}
+	system("pause");
 	return 0;
 }
